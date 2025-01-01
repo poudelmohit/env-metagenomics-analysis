@@ -103,8 +103,6 @@
 
     mkdir ../assembled_files/
 
-### zipping fastq files, because apparently metaspades work only with compressed files:
-
 ### for loop for assembly
 
     for r1 in trimmed_*R1.fastq;do
