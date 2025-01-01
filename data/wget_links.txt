@@ -1,0 +1,17 @@
+http://ftp.sra.ebi.ac.uk/vol1/run/ERR214/ERR2143795/JP4DASH2120627WATERAMPRESIZED_R1.fastq.gz
+http://ftp.sra.ebi.ac.uk/vol1/run/ERR214/ERR2143795/JP4DASH2120627WATERAMPRESIZED_R2.fastq.gz
+
+http://ftp.sra.ebi.ac.uk/vol1/run/ERR214/ERR2143765/JC4B120627SEDIMENT_R1.fastq.gz
+http://ftp.sra.ebi.ac.uk/vol1/run/ERR214/ERR2143765/JC4B120627SEDIMENT_R2.fastq.gz
+
+http://ftp.sra.ebi.ac.uk/vol1/run/ERR214/ERR2143789/JP4110514WATERRESIZE_R2.fastq.gz
+http://ftp.sra.ebi.ac.uk/vol1/run/ERR214/ERR2143789/JP4110514WATERRESIZE_R1.fastq.gz
+
+http://ftp.sra.ebi.ac.uk/vol1/run/ERR214/ERR2143759/JC1DASH3120627WATERRESIZED_R1.fastq.gz
+http://ftp.sra.ebi.ac.uk/vol1/run/ERR214/ERR2143759/JC1DASH3120627WATERRESIZED_R2.fastq.gz
+
+http://ftp.sra.ebi.ac.uk/vol1/run/ERR214/ERR2143785/JP2DASH1120627WATERAMPRESIZED_R1.fastq.gz
+http://ftp.sra.ebi.ac.uk/vol1/run/ERR214/ERR2143785/JP2DASH1120627WATERAMPRESIZED_R2.fastq.gz
+
+http://ftp.sra.ebi.ac.uk/vol1/run/ERR214/ERR2143778/JP2110514WATERRESIZE_R1.fastq.gz
+http://ftp.sra.ebi.ac.uk/vol1/run/ERR214/ERR2143778/JP2110514WATERRESIZE_R1.fastq.gz
