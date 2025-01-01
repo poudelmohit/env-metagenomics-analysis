@@ -4,9 +4,14 @@
 ## Main Folder Structure
 
   data/raw_data/: Contains the raw data downloaded from NCBI repository.
+  
   data/working_data/: Contains intermediate data (inside different subdirectories) produced in downstream analyses.
+  
   metadata/: Information of samples, reference paper, etc
+  
   results/: Includes final visualizations, such as abundance plots, apha diversity plots, etc.
+  
   scripts/: Markdown files for the analysis.  
+  
   docs/: Documentation of the work and landing page for the project website.
 
