@@ -1,0 +1,294 @@
+---
+title: "Diversity Analysis of Environmental Samples"
+author: "Mohit"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+### Load necessary libraries
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+
+R.Version()$version.string  # Verify R version
+
+library(phyloseq)
+library(ggplot2)
+library(RColorBrewer)
+library(patchwork)
+library(reshape2)
+library(tidyr)
+library(dplyr)
+library(ggrepel)
+```
+
+### Import Data and Explore
+
+```{r input_data, include=FALSE}
+getwd()  # Check current working directory
+# setwd("data/working_data/tx_files/")  # my path for reference
+
+# Import BIOM file and create phyloseq object
+merged_metagenome <- import_biom("final.biom")
+class(merged_metagenome)  # Verify it is a phyloseq object
+
+```
+
+### View and clean taxonomy data
+
+```{r exploration, include=FALSE}
+
+# View raw taxonomy table
+# View(merged_metagenome@tax_table@.Data)
+
+# Clean taxonomy data
+merged_metagenome@tax_table@.Data <- substring(merged_metagenome@tax_table@.Data, 4)  # Remove prefixes like 'k__' in biom file
+colnames(merged_metagenome@tax_table@.Data) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
+#View(merged_metagenome@tax_table@.Data)
+
+```
+
+
+### Preprocessing abundance data
+
+```{r preprocessing_abd}
+
+# Explore abundance table
+View(merged_metagenome@otu_table@.Data)
+colSums(merged_metagenome@otu_table@.Data)
+
+```
+### Explore taxonomy
+
+```{r exolore_taxonomy}
+## Summarize taxonomy data:
+print(table(merged_metagenome@tax_table@.Data[, "Kingdom"]))
+
+### Unique phyla across all kingdoms
+print(unique(merged_metagenome@tax_table@.Data[, "Phylum"]))
+
+### Unique phyla for bacteria
+print(unique(merged_metagenome@tax_table@.Data[merged_metagenome@tax_table@.Data[, "Kingdom"] == "Bacteria", "Phylum"]))
+
+```
+
+### Add sample metadata
+
+```{r metadata}
+# Adding treatment info in sample data:
+sample_data_df <- as.data.frame(sample_data(merged_metagenome))
+sample_data_df$Treatment <- c("Control", "Unenriched", "Fertilized", "Unenriched", "Fertilized")
+sample_data(merged_metagenome) <- sample_data(sample_data_df)
+merged_metagenome@sam_data
+```
+
+
+### Subset bacterial metagenomes
+
+```{r subset}
+
+# Subset data for bacteria only
+bacterial_metagenomes <- subset_taxa(merged_metagenome, Kingdom == "Bacteria")
+bacterial_metagenomes <- subset_taxa(bacterial_metagenomes, Genus != "") #Only genus that are not blank
+
+# print(bacterial_metagenomes)
+print(sample_sums(bacterial_metagenomes))  # Sample sums
+print(summary(bacterial_metagenomes@otu_table@.Data))  # OTU table summary
+
+```
+
+
+### Box Plot for Abundance Distribution
+
+```{r box_plot}
+# Prepare data for box plot
+otu_table_df <- as.data.frame(bacterial_metagenomes@otu_table@.Data)
+otu_table_df$Taxa <- rownames(otu_table_df)
+otu_table_long <- melt(otu_table_df, id.vars = "Taxa", variable.name = "Sample", value.name = "Abundance")
+
+# Create a vector of treatment labels (ensure this matches the order of samples in your dataset)
+treatment_labels <- c("Control", "Unenriched", "Fertilized", "Unenriched", "Fertilized")
+
+# Assign colors to each treatment type
+treatment_colors <- c("Control" = "red", "Unenriched" = "blue", "Fertilized" = "darkgreen")
+
+# Map treatment colors to sample labels
+sample_colors <- treatment_colors[treatment_labels]
+
+# Create the box plot with colored x-axis labels
+box_plot <- ggplot(otu_table_long, aes(x = Sample, y = Abundance)) +
+  geom_boxplot(outlier.color = "orange", fill = "skyblue", color = "darkblue") +
+  theme_minimal() +
+  labs(title = "Abundance Distribution Across Samples", x = "Sample", y = "Abundance") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, color = sample_colors), # Apply treatment colors
+    plot.title = element_text(hjust = 0.5)
+  )
+
+# Display the plot
+box_plot
+
+# Save the plot
+ggsave("../../../results/summary_boxplot.jpg", plot = box_plot, width = 8, height = 6, dpi = 300)
+```
+Samples colored according to treatment: Red for Control, Blue for Unenriched and Green for Fertilized.
+Here, abundance values are not normalized, due to which the plot looks weird. 
+Huge difference is observed in the max abundance value in different treatments.
+
+```{r highest_abd_otu}
+# head(otu_table_df)
+# Identify the highest abundance OTU per sample
+highest_abundance_per_sample <- apply(otu_table_df, 2, function(column) {
+  otu_index <- which.max(column)  # Index of the maximum abundance in the sample
+  list(OTU = rownames(otu_table_df)[otu_index], Abundance = column[otu_index])
+})
+# Convert the result to a dataframe for better readability
+highest_abundance_df <- do.call(rbind, lapply(names(highest_abundance_per_sample), function(sample) {
+  data.frame(Sample = sample,
+             OTU = highest_abundance_per_sample[[sample]]$OTU,
+             Abundance = highest_abundance_per_sample[[sample]]$Abundance)
+}))
+
+# Print the results
+print(highest_abundance_df)
+```
+It is clear that the same OTU (1063) is the most abundant across all samples.
+
+### Alpha Diversity Plot
+
+```{r alpha_diversity}
+
+### Generate richness plot
+richness_plot <- plot_richness(
+  physeq = bacterial_metagenomes,
+  measures = c("Observed", "Chao1", "Shannon"),
+  color = "Treatment"
+) +
+  geom_point(size = 4) +
+  theme_minimal() +
+  labs(title = "Alpha Diversity Colored by Treatment") +
+  theme(
+    text = element_text(size = 16),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    axis.title.x = element_text(size = 18),
+    axis.title.y = element_text(size = 18),
+    plot.title = element_text(hjust = 0.5, size = 20)
+  )
+richness_plot
+### Save richness plot
+# ggsave("../../../results/alpha_diversity_richness.jpg", plot = richness_plot, width = 14, height = 6, dpi = 300)
+
+```
+### Standarization 
+```{r standarization}
+
+# head(bacterial_metagenomes@otu_table@.Data)
+percentages <- transform_sample_counts(bacterial_metagenomes, function(x) x*100 / sum(x) )
+head(percentages@otu_table@.Data)
+```
+Transforming the abundance values of all OTUS in percentage before beta diversity calculation.
+```{r}
+sample_data(percentages)
+```
+
+### Beta Diversity Plot
+
+```{r beta_diversity, include=FALSE}
+
+# Perform NMDS ordination
+meta_ord <- ordinate(physeq = percentages, method = "NMDS", distance = "bray")
+
+# Define custom colors for treatments
+treatment_colors <- c("Control" = "red", "Unenriched" = "blue", "Fertilized" = "darkgreen")
+
+# Create NMDS plot with improved label placement
+nmds_plot <- plot_ordination(
+  physeq = percentages,
+  ordination = meta_ord,
+  color = "Treatment"
+) +
+  geom_point(size = 4) +  # Add dots for samples
+  geom_text_repel(aes(label = Id), size = 4, fontface = "bold") +  # Improved text placement
+  theme_minimal() +
+  labs(title = "NMDS Plot (Bray-Curtis Distance)", x = "NMDS1", y = "NMDS2") +
+  theme(
+    text = element_text(size = 14),
+    plot.title = element_text(size = 18, hjust = 0.5, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 12),
+    legend.title = element_text(size = 14),
+    legend.text = element_text(size = 12)
+  ) +
+  scale_color_manual(values = treatment_colors)  # Apply custom colors
+
+# Save the plot
+ggsave("../../../results/nmds_plot.jpg", plot = nmds_plot, width = 14, height = 6, dpi = 300)
+
+```
+
+```{r}
+nmds_plot
+```
+### Diversity Plot
+```{r abundance_matrix}
+# Abundance Matrix for phylum diversity
+
+percentages_df <- psmelt(tax_glom(physeq = percentages, taxrank="Phylum"))
+str(percentages_df) # relative abundance matrix
+
+absolute_glom <- tax_glom(physeq = bacterial_metagenomes, taxrank = "Phylum")
+absolute_df <- psmelt(absolute_glom) # absolute abundance matrix
+str(absolute_df)
+
+```
+
+```{r diversity_plot}
+# Diversity Plot of absolute and relative abundance:
+
+percentages_df$Phylum <- as.factor(percentages_df$Phylum)
+phylum_colors_rel<- colorRampPalette(brewer.pal(8,"Dark2")) (length(levels(percentages_df$Phylum)))
+
+# Create a vector of treatment labels
+treatment_labels <- c("Control", "Unenriched", "Fertilized", "Unenriched", "Fertilized")
+
+# Assign colors to each treatment type
+treatment_colors <- c("Control" = "red", "Unenriched" = "blue", "Fertilized" = "darkgreen")
+
+# For the absolute plot
+absolute_plot <- ggplot(data=absolute_df, aes(x=Sample, y=Abundance, fill=Phylum)) + 
+    geom_bar(stat="identity", position="stack") +
+    scale_fill_manual(values = phylum_colors_abs) +
+    theme(axis.text.x = element_text(color = treatment_colors[treatment_labels]))
+
+# For the relative plot
+relative_plot <- ggplot(data=percentages_df, aes(x=Sample, y=Abundance, fill=Phylum)) + 
+    geom_bar(stat="identity", position="stack") +
+    scale_fill_manual(values = phylum_colors_rel) +
+    theme(axis.text.x = element_text(color = treatment_colors[treatment_labels]))
+
+```
+
+#### Absolute Diversity Plot
+```{r absolute_diversity_plot}
+absolute_plot
+ggsave(
+    filename = paste0("../../../results/absolute_plot.png"), # File name
+    plot = absolute_plot,                                    # Plot object
+    width = 10,                                              # Width of the plot (in inches)
+    height = 6,                                              # Height of the plot (in inches)
+    dpi = 300                                                # Resolution in dots per inch
+)
+```
+
+#### Relative Diversity Plot
+```{r relative_plot}
+relative_plot
+ggsave(
+    filename = paste0("../../../results/relative_plot.png"), # File name
+    plot = absolute_plot,                                    # Plot object
+    width = 10,                                              # Width of the plot (in inches)
+    height = 6,                                              # Height of the plot (in inches)
+    dpi = 300                                                # Resolution in dots per inch
+)
+```
+Nitrospirae phylum observed to be the most abundant in "fertilized" samples.
