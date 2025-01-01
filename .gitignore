@@ -1,7 +1,7 @@
 data/raw_reads/*.fastq
-data/working_data/assembled_files/
-data/working_data/binned_files/
-data/working_data/trimmed_files/
+data/working_data/assembled_files/*
+data/working_data/binned_files/*
+data/working_data/trimmed_files/*
 data/working_data/kraken2_db/*
 data/working_data/krona_files/*.input
 

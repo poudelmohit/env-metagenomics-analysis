@@ -178,8 +178,9 @@
 ### copying the summary files into results folder:
 
     mkdir -p ../../../results/summary_binning/
-    find . -type f -iname "*.summary" -exec cp {} ../../results/summary_binning/ \;
-
+    find . -type f -iname "*.summary" -exec cp {} ../../../results/summary_binning/ \;
+    # copied summary of 5 binned samples to results directory
+    
 ### Checking the quality of the assembled genomes
 
 #### only 5 samples (that passed binning) has .fasta output. So:
