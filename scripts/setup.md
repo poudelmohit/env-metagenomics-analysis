@@ -2,7 +2,8 @@
 ## Creating requirement file to reproduce the analysis:
     
     conda list > requirements.txt # this file has info of all installed packages.
-    conda env export > environment.yml # use this file to create exact same conda env later.
+    conda env export --no-builds > environment.yml # use this file to recreate exact same conda env.
+    conda activate mg # mg for metagenomics
 
 ## Installing tools in dedicated conda environment: 
 
