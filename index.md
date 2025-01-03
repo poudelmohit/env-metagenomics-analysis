@@ -1,4 +1,4 @@
-# Metagenomics Analysis of Environmental Samples
+# Metagenomic Analysis of Environmental Samples
 
 Welcome to the project page for analyzing metagenomic samples using 16S sequencing data. This project focuses on exploring microbial diversity and taxonomy using a custom bioinformatics pipeline. Below, is a detailed overview of the workflow, including preprocessing steps, diversity analysis, and visualization of results.
 
@@ -92,7 +92,6 @@ Outputs:
 Diversity analysis plots are available in the [results folder](results/) for further exploration and reporting.
 
 
-
 All processed and summarized data culminates in a [final.biom file](data/working_data/tx_files/final.biom), a JSON-formatted BIOM file, which serves as a compact representation of microbial profiles.
 
 
@@ -109,11 +108,11 @@ This project utilizes the following bioinformatics tools and pipelines:
 - Kraken-BIOM: For creating BIOM files.
 
 
-
 **Please check [this github repo](https://github.com/poudelmohit/env-metagenomics-analysis) for details**
 
 ## Special Thanks:
-[**Alavarado-Serrano LAB, Ohio Univesity**](https://alvarado-s.weebly.com)
+
+[**Alavarado-Serrano Lab, Ohio Univesity**](https://alvarado-s.weebly.com)
 ![Logo](https://github.com/poudelmohit/portfolio/blob/main/assets/lablogo-small.png)
 
 ## Additional Resources:
