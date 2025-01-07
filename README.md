@@ -15,3 +15,4 @@
   
   docs/: Documentation of the work and landing page for the project website.
 
+#### Please visit this [project website](https://poudelmohit.github.io/env-metagenomics-analysis/) for details.
